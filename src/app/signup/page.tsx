@@ -5,16 +5,38 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 
 export default function SignupPage(){
-
+    const router = useRouter();
     const [user, setUser] = React.useState({
         username : "",
         email : "",
         password : ""
     })
+    const [loading,setLoading] = React.useState(false);
+    const [error,setError] = React.useState("");
 
     const onSignup = async () => {
-        
+    if (!user.username || !user.email || !user.password) {
+        setError("All fields are required");
+        return;
     }
+
+    try {
+        setError(""); // clear previous error
+        setLoading(true);
+
+        const response = await axios.post("/api/users/signup", user);
+        console.log(response.data);
+
+        router.push("/login");
+
+    } catch (error: any) {
+        setError(error?.response?.data?.error || "something went wrong");
+    } finally {
+        setLoading(false);
+    }
+};
+
+
 
     return(
         <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-black">
@@ -60,9 +82,14 @@ export default function SignupPage(){
                             placeholder="enter password"
                         />
                     </div>
-                    
-                    <button className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold py-3 rounded-lg hover:from-cyan-600 hover:to-blue-700 transition-all shadow-lg shadow-cyan-500/50 mt-6" onClick={onSignup}>
-                        Sign Up
+                    {error && (
+                        <p className="text-red-400 text-sm text-center">
+                        {error}
+                        </p>
+                    )}
+
+                    <button className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold py-3 rounded-lg hover:from-cyan-600 hover:to-blue-700 transition-all shadow-lg shadow-cyan-500/50 mt-6" disabled={loading} onClick={onSignup}>
+                        {loading ? "Signing you up.." : "Sign Up" }
                     </button>
                     
                     <div className="text-center mt-4">
